@@ -28,7 +28,7 @@ int partition(int arr[], int low, int high) {
 // Implementação do QuickSort iterativo
 void quickSortIterative(int arr[], int low, int high) {
     // Crie uma pilha auxiliar
-    int stack[high - low + 1];
+    int *stack= malloc(sizeof(int)* (high - low + 1));
 
     // Inicialize o topo da pilha
     int top = -1;
@@ -39,6 +39,7 @@ void quickSortIterative(int arr[], int low, int high) {
 
     // Repetir enquanto a pilha não estiver vazia
     while (top >= 0) {
+        //printf("top=%d\n",top);
         // Desempilhe os valores de 'low' e 'high'
         high = stack[top--];
         low = stack[top--];
