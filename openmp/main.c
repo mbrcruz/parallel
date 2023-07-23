@@ -1,84 +1,73 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <omp.h>
 #include "random.h"
 
-#define MAX_STACK_SIZE 1000
-
-typedef struct {
-    int low;
-    int high;
-} StackItem;
-
-void swap(int *a, int *b) {
+// Função para trocar dois elementos no vetor
+void swap(int* a, int* b) {
     int temp = *a;
     *a = *b;
     *b = temp;
 }
 
+// Função para particionar o vetor e retornar o índice do pivô
 int partition(int arr[], int low, int high) {
     int pivot = arr[high];
     int i = low - 1;
 
-    for (int j = low; j <= high - 1; j++) {
-        if (arr[j] < pivot) {
+    for (int j = low; j < high; j++) {
+        if (arr[j] <= pivot) {
             i++;
             swap(&arr[i], &arr[j]);
         }
     }
+
     swap(&arr[i + 1], &arr[high]);
     return i + 1;
 }
 
-void quicksort_parallel(int arr[], int low, int high) {
-    int stack_top = -1;
-    StackItem stack[MAX_STACK_SIZE];
+// Implementação do QuickSort iterativo
+void quickSortIterative(int arr[], int low, int high) {
+    // Crie uma pilha auxiliar
+    int stack[high - low + 1];
 
-    #pragma omp parallel
-    {
-        #pragma omp single
-        {
-            stack[++stack_top] = (StackItem){low, high};
+    // Inicialize o topo da pilha
+    int top = -1;
+
+    // Empilhe os valores inicial e final de 'low' e 'high'
+    stack[++top] = low;
+    stack[++top] = high;
+
+    // Repetir enquanto a pilha não estiver vazia
+    while (top >= 0) {
+        // Desempilhe os valores de 'low' e 'high'
+        high = stack[top--];
+        low = stack[top--];
+
+        // Obtenha o índice do pivô usando a função partition
+        int pivotIndex = partition(arr, low, high);
+
+        // Se houver elementos à esquerda do pivô, empilhe-os
+        if (pivotIndex - 1 > low) {
+            stack[++top] = low;
+            stack[++top] = pivotIndex - 1;
         }
 
-        while (stack_top >= 0) {
-            int top_high = stack[stack_top].high;
-            int top_low = stack[stack_top--].low;
-
-            if (top_low < top_high) {
-                int pivot_index = partition(arr, top_low, top_high);
-
-                #pragma omp task
-                {
-                    stack[++stack_top] = (StackItem){top_low, pivot_index - 1};
-                }
-
-                #pragma omp task
-                {
-                    stack[++stack_top] = (StackItem){pivot_index + 1, top_high};
-                }
-            }
+        // Se houver elementos à direita do pivô, empilhe-os
+        if (pivotIndex + 1 < high) {
+            stack[++top] = pivotIndex + 1;
+            stack[++top] = high;
         }
     }
 }
 
-
 int main() {
-
     int *arr = malloc(sizeof(int) * N_ELEMENTS);   
     int n = N_ELEMENTS; 
     int num_threads;
-    random_elements(arr,n);
-    printf("Numero de elementosy %d\n", n);
+    random_elements(arr,n);   
 
-    // Chama a função de ordenação paralela
-    #pragma omp parallel
-    {
-        num_threads = omp_get_thread_num();
-        printf("Numero de thread %d\n", num_threads);
-        #pragma omp single nowait
-        quicksort_parallel(arr, 0, n - 1);
-    }
+    quickSortIterative(arr, 0, n - 1);
+
 
     return 0;
 }
