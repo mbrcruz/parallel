@@ -1,8 +1,8 @@
-SOURCES=random.c main.c
+SOURCES=utils.c main.c
 CC=gcc
 OBJECTS=$(SOURCES:.c=.o)
-	CFLAGS=-fopenmp -c
-	LDFLAGS=-fopenmp
+CFLAGS=-fopenmp -c
+LDFLAGS=-fopenmp
 
 all: prog
 
@@ -16,4 +16,4 @@ prog: ${OBJECTS}
 .c.o:
 	        ${CC} ${CFLAGS} $<
 clean:
-	        @rm -f *.o prog
+	        @rm -fv *.o prog
