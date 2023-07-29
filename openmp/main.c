@@ -32,7 +32,7 @@ int partition(int arr[], int low, int high) {
     int pivot = arr[high];
     int i = low - 1;
 
-    #pragma omp parallel shared(i)
+    #pragma omp parallel shared(i,arr,low,high)
     {
         #pragma omp for
         for (int j = low; j < high; j++) {
@@ -98,7 +98,7 @@ int main() {
 
     random_elements(arr,n);
     quickSort(arr, 0, n - 1);
-    print_array(arr,n);
+    //print_array(arr,n);
     
 
 
