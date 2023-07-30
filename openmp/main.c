@@ -50,8 +50,7 @@ int partition(int arr[], int low, int high) {
 
 // Implementação do QuickSort iterativo
 void quickSort(int arr[], int low, int high) {
-    // Crie uma pilha auxiliar
-    int num_threads;
+    // Crie uma pilha auxiliar    
     int *stack= malloc(sizeof(int)* (high - low + 1));
 
     // Inicialize o topo da pilha
@@ -61,28 +60,55 @@ void quickSort(int arr[], int low, int high) {
     stack[++top] = low;
     stack[++top] = high;
 
-    //#pragma omp parallel
-    // Repetir enquanto a pilha não estiver vazia
-    while (top >= 0) {        
-      
-        // Desempilhe os valores de 'low' e 'high'
-        high = stack[top--];
-        low = stack[top--];
-
-        // Obtenha o índice do pivô usando a função partition
-        int pivotIndex = partition(arr, low, high);     
-               
-        if (pivotIndex - 1 > low) {
-            stack[++top] = low;
-            stack[++top] = pivotIndex - 1;
-        } 
-
-        if (pivotIndex + 1 < high) {
-            stack[++top] = pivotIndex + 1;
-            stack[++top] = high;
-        }
+    #pragma omp parallel
+    {
+        // Repetir enquanto a pilha não estiver vazia
+        #pragma omp single
+        {
+             while (top >= 0) {       
         
+                // Desempilhe os valores de 'low' e 'high'
+                high = stack[top--];
+                low = stack[top--];
+
+                // Obtenha o índice do pivô usando a função partition
+                int pivotIndex; 
+                int pivot = arr[high];
+                int i = low - 1;
+                for (int j = low; j < high; j++) {
+                    #pragma opm task
+                    {
+                        //int th= omp_get_thread_num();
+                        //printf("i=%d,j=%d,th=%d\n",i,j,th);
+                        if (arr[j] <= pivot) {
+                            #pragma opm atomic
+                            i++;
+                            swap(&arr[i], &arr[j]);
+                        }
+                    }
+                    
+                } 
+                swap(&arr[i + 1], &arr[high]);
+                pivotIndex = i + 1;  
+                 
+                    
+                if (pivotIndex - 1 > low) {
+                    stack[++top] = low;
+                    stack[++top] = pivotIndex - 1;
+                } 
+
+                if (pivotIndex + 1 < high) {
+                    stack[++top] = pivotIndex + 1;
+                    stack[++top] = high;
+                }
+            
+            }
+
+        }
+       
+
     }
+    
 }
 
 void print_array(int *array, int size){
