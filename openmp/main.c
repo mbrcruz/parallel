@@ -6,16 +6,16 @@
 void random_elements(int arr[],int size)
 {
     int th;    
-    #pragma omp parallel
-    {
-        #pragma omp for
+    //#pragma omp parallel
+    //{
+       // #pragma omp for
         for (int i = 0; i < size; i++) 
         {
             arr[i]= rand();
             //th= omp_get_thread_num();
             //printf("i=%d,th=%d\n",i,th);
         }       
-    }   
+    //}   
 
 }
 
